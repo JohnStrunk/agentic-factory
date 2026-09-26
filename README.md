@@ -21,3 +21,21 @@ development workflow.
    creation of Gherkin feature files and step definitions. The team of agents
    will then implement the system to satisfy these requirements, and verify
    that the implementation meets the requirements.
+
+## Initial set of requirements
+
+This template includes an initial set of requirements for setting up CI,
+linting, Renovate dependency management, and Mergify merge queue automation in
+`features/repo-infrastructure/`. While the EARS requirements should be able to be
+used and refined as desired, you may want to have your agent re-write the step
+files into whatever language is chosen for the project as a whole.
+
+### Running the Verification Suite
+
+To verify the repository infrastructure specifications without installing local
+virtual environments or project manifests:
+
+```bash
+uvx --with pyyaml --with json5 behave
+```
+
