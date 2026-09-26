@@ -18,36 +18,80 @@ specification of the system:
   including its components and their interactions. This document provides a
   high-level overview of how the system is structured. It should not contain
   implementation details, only the high-level components and their interfaces
-  to each other and the external world
+  to each other and the external world.
 - [`/features/**`](features) - This directory contains the specifications for
-  the system's features, written in Gherkin syntax. Each feature is an EARS
-  (Easy Approach to Requirements Syntax) rule, which describes a specific
-  behavior or functionality of the system. The scenarios within each feature
-  file ensure the system accurately implements the specified behavior.
-- [`/AGENTS.md`](AGENTS.md) and [`/.agents/**`](.agents) - These files contain
-  the definitions of the agents that are used to develop and test the system.
+  the system's features, written in Gherkin syntax, and the step definitions.
+  See [`/features/AGENTS.md`](features/AGENTS.md) for the authoritative format,
+  tagging requirements, and directory layout.
+- [`/AGENTS.md`](AGENTS.md), [`/.agents/**`](.agents), and
+  [`/.opencode/**`](.opencode) - These files contain the development
+  methodology and the definitions of the agents that develop and test the
+  system.
 
-All other artifacts in the repository are considered to be derived from these
-authoritative artifacts. It should be possible to delete any other artifact
-and regenerate it from the authoritative artifacts.
+### Incremental development vs. Clean-room regeneration
+
+- **Incremental development is the norm:** Implementation code,
+  configurations, and test step definitions are checked into version control.
+  Daily evolution proceeds incrementally, maintaining existing working
+  features while adding or refining behavior.
+- **Regeneration invariant:** All code and step implementations remain
+  conceptually derived from the authoritative artifacts. It must always be
+  possible to delete all derived artifacts and regenerate the system from
+  scratch using only the authoritative artifacts.
+
+### Language and framework selection
+
+- **Consistency:** The programming language, framework, and toolchain must
+  remain consistent within a given generation of the project.
+- **Freedom of choice:** Unless an authoritative requirement in
+  [`/Vision.md`](Vision.md), [`/Architecture.md`](Architecture.md), or
+  [`/features/**`](features) explicitly mandates a specific technology, the
+  agent is free to select the most suitable modern language and framework for
+  that generation.
+
+### Agent roles and separation of duties
+
+Specialized subagents are defined in [`.agents/agents/`](.agents/agents/) and
+mirrored in [`.opencode/agents/`](.opencode/agents/) for compatibility with
+both Antigravity and OpenCode v2:
+
+1. **[`qa-spec`](.agents/agents/qa-spec.md)** — Requirements & QA
+   Specification Agent:
+   - Uses the `eliciting-requirements` skill to craft EARS rules.
+   - Creates `.feature` files in `features/` per
+     [`features/AGENTS.md`](features/AGENTS.md).
+   - Generates executable step definitions in `features/steps/<type>`
+     (`given/`, `when/`, `then/`) incorporating property-based testing.
+   - Ensures tests fail before implementation (Red phase).
+
+2. **[`developer`](.agents/agents/developer.md)** — Implementation Agent:
+   - Selects or adheres to the consistent language and framework for the
+     generation.
+   - Implements application code and wiring to satisfy feature specifications
+     (Green phase).
+   - Does not alter test assertions or acceptance criteria to force passes.
+
+3. **[`verifier`](.agents/agents/verifier.md)** — Verification & Gatekeeper
+   Agent:
+   - Executes the test suite and audits step definitions for anti-tautology
+     and mock integrity.
+   - Enforces architectural alignment with
+     [`Architecture.md`](Architecture.md) and tagging compliance with
+     [`features/AGENTS.md`](features/AGENTS.md).
+   - Audits clean-room regeneration capability from scratch.
 
 ### Development workflow
 
-The development workflow is as follows:
-
-- When the user wants to add a new feature, fix a bug, or make any other
-  change to the system, you should use the `eliciting-requirements` skill to
-  interactively work with the user to create the EARS rules that define the
-  desired behavior. This process should be done in a conversational manner,
-  with the user providing input and feedback as needed.
-- These EARS rules should be added as feature files in the `features`
-  directory (one rule per file). Name the feature files based on a slugified
-  version of the EARS rule.
-- Create scenarios within each feature file to ensure that the system
-  accurately implements the specified behavior. Use property-based testing
-  where possible to generate a wide range of test cases and ensure that the
-  system behaves correctly in all situations.
-- Implement the system behavior defined in the feature files. This may involve
-  writing code, configuring the system, or making other changes as needed.
-- Implement the steps defined in the feature files so that the tests are
-  executable.
+1. **Elicit requirements:** When adding a feature, fixing a bug, or modifying
+   behavior, the `qa-spec` agent uses the `eliciting-requirements` skill
+   interactively with the user to construct EARS rules.
+2. **Draft feature specifications:** Add each EARS rule as a `.feature` file
+   in `features/` named after a slugified version of the rule. Follow the
+   schema in [`features/AGENTS.md`](features/AGENTS.md).
+3. **Implement step definitions & property tests:** The `qa-spec` agent
+   creates step definitions under `features/steps/{given,when,then}/`,
+   formulating invariant properties with property-based testing.
+4. **Implement behavior:** The `developer` agent implements system code,
+   configs, and dependencies to make tests pass.
+5. **Verify & gate:** The `verifier` agent runs the test suite, audits code
+   against architectural boundaries, and certifies readiness for commit.
