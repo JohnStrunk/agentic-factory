@@ -80,6 +80,15 @@ both Antigravity and OpenCode v2:
      [`features/AGENTS.md`](features/AGENTS.md).
    - Audits clean-room regeneration capability from scratch.
 
+4. **[`security`](.agents/agents/security.md)** — Security Review & Audit Agent:
+   - Operates alongside the `verifier` agent to inspect implementation code,
+     dependencies, and system configuration for security vulnerabilities.
+   - Audits changes against authoritative security benchmarks, emphasizing the
+     OWASP Top 10, OWASP API Security Top 10, and OWASP Top 10 for LLM
+     Applications.
+   - Gates releases against critical security risks, insecure defaults, secret
+     leaks, and supply chain threats.
+
 ### Development workflow
 
 1. **Elicit requirements:** When adding a feature, fixing a bug, or modifying
@@ -93,5 +102,7 @@ both Antigravity and OpenCode v2:
    formulating invariant properties with property-based testing.
 4. **Implement behavior:** The `developer` agent implements system code,
    configs, and dependencies to make tests pass.
-5. **Verify & gate:** The `verifier` agent runs the test suite, audits code
-   against architectural boundaries, and certifies readiness for commit.
+5. **Verify, audit & gate:** The `verifier` agent runs the test suite and audits
+   architectural boundaries while the `security` agent inspects code and
+   configurations for security vulnerabilities against OWASP standards,
+   jointly certifying readiness for commit.
